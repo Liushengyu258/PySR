@@ -4,11 +4,11 @@
 /file/read-case "{case_path}"
 
 ;; =======================================================
-;; === NEW STEP: Rename Report Output Files ===
-;; 修改 'area-rfile' 的输出文件名为 dpX_area.out
+;; === Rename report output files ===
+;; Set 'area-rfile' output name to dpX_area.out
 /solve/report-files/edit/area-rfile file-name "{report_file_area}" q
 
-;; 修改 'report-rfile' 的输出文件名为 dpX_report.out
+;; Set 'report-rfile' output name to dpX_report.out
 /solve/report-files/edit/report-rfile file-name "{report_file_report}" q
 ;; =======================================================
 

@@ -18,22 +18,23 @@ SETUP_SRC = f"""{SETUP_MARKER}
 import os, sys
 from pathlib import Path
 
-# 自动向上查找项目根目录 (含 .gitignore 的文件夹)
+# Walk upward to find the project root (folder containing .gitignore)
 _p = Path.cwd().resolve()
 while _p != _p.parent and not (_p / '.gitignore').exists():
     _p = _p.parent
 PROJECT_ROOT = _p
 
-# 切换 cwd 到项目根, 使所有相对路径 (Stage1_Exploration/, Refined_Results_v4/ 等) 保持有效
+# Switch cwd to the project root so every relative path
+# (Stage1_Exploration/, Refined_Results_v4/, ...) keeps working
 os.chdir(PROJECT_ROOT)
-# 让 notebooks 能 `from viz_config import VizConfig`
+# Let the notebooks do `from viz_config import VizConfig`
 sys.path.insert(0, str(PROJECT_ROOT))
 
 DATA_DIR = PROJECT_ROOT / 'data'
 print(f'[setup] PROJECT_ROOT = {{PROJECT_ROOT}}')
 """
 
-# 旧路径 -> 新路径 (均假设 cwd 已切到 PROJECT_ROOT)
+# Old path -> new path (assumes cwd has been switched to PROJECT_ROOT)
 CSV_REPLACEMENTS = {
     "'train_dataset_ready.csv'": "'data/train_dataset_ready.csv'",
     '"train_dataset_ready.csv"': '"data/train_dataset_ready.csv"',

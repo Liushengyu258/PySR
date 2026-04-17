@@ -38,23 +38,22 @@ Thumbs.db
 desktop.ini
 
 # ==========================================
-# 项目特定: PySR 大量中间产物 (体积巨大, 不建议上传)
+# Project-specific: PySR intermediate artefacts (very large, not worth committing)
 # ==========================================
-# PySR 每次运行都会生成带时间戳的输出目录, 体积巨大
+# Each PySR run creates a timestamped directory under outputs/; they can be huge
 outputs/
 
-# Julia / PySR 符号回归中间文件
+# Julia / PySR symbolic-regression intermediate files
 hall_of_fame*.csv
 hall_of_fame*.pkl
 hall_of_fame*.bkup
 *.out.bkup
 
 # ==========================================
-# 大文件 (可选: 如果不想上传原始 CFD 数据)
+# Large files (optional - uncomment if the raw CFD data should not be pushed)
 # ==========================================
-# 如果仓库过大, 可以取消以下注释让原始数据不上传:
 # data/train_dataset_ready.csv
 # data/summary_0_499.csv
 
-# 根目录下的脚本一次性补丁工具生成 (通常不需要上传)
+# One-off internal patch tool output (uncomment to exclude from the repo)
 # scripts/_patch_notebooks.py
