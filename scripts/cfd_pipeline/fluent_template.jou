@@ -1,0 +1,30 @@
+;; Fluent Journal File Template for Batch Processing
+
+;; 1. Read the case file
+/file/read-case "{case_path}"
+
+;; =======================================================
+;; === NEW STEP: Rename Report Output Files ===
+;; 修改 'area-rfile' 的输出文件名为 dpX_area.out
+/solve/report-files/edit/area-rfile file-name "{report_file_area}" q
+
+;; 修改 'report-rfile' 的输出文件名为 dpX_report.out
+/solve/report-files/edit/report-rfile file-name "{report_file_report}" q
+;; =======================================================
+
+;; 2. Initialize the flow field
+/solve/initialize/initialize-flow
+
+;; 3. Set calculation parameters
+/solve/set/time-step-size 1.0
+/solve/set/max-iterations-per-time-step 10
+
+;; 4. Run the calculation
+/solve/dual-time-iterate {time_steps} 10
+
+;; 5. Write the data file
+/file/write-data "{dat_path}"
+
+;; 6. Exit Fluent
+/exit
+yes
