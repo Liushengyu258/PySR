@@ -1,10 +1,30 @@
-# A Hybrid Symbolic-Regression Framework for Pollutant Concentration Prediction
+# Hybrid Symbolic-Regression Framework for Pollutant Concentration
 
-This project implements a hybrid framework that combines **Symbolic Regression
-(PySR)** with physics-informed hypotheses to predict the spatial distribution
-of pollutant concentration.  It covers the full pipeline: raw CFD data
-ingestion, formula discovery, parameter fitting, robustness / data-efficiency
-experiments, and publication-quality figure generation.
+[![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Code Style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+A compact, fully reproducible reference implementation of a **hybrid
+framework that couples Symbolic Regression (PySR) with a neural denoiser**
+to recover an interpretable closed-form law for the spatial decay of
+pollutant concentration from noisy CFD simulation data.
+
+This repository contains the exact code and data used to produce every
+figure in our paper.
+
+---
+
+## Highlights
+
+- **Closed-form law** &mdash; recovers an analytic formula
+  `C(x) = C_in / [ (alpha * x) / max(Area - beta * sqrt(x/v) + gamma, 0.1) + delta ]`
+  with physically interpretable parameters.
+- **Noise-robust** &mdash; Hybrid PySR stays above R^2 = 0.9 up to ~47 % target
+  noise, while direct symbolic regression collapses at ~50 %.
+- **Data-efficient** &mdash; reaches 99 % of peak R^2 with only a few thousand
+  training samples (see Figure 8).
+- **Reproducible** &mdash; every random seed is pinned. Running the scripts end
+  to end reproduces the paper figures.
 
 ---
 
@@ -12,113 +32,145 @@ experiments, and publication-quality figure generation.
 
 ```
 PySR/
-├── README.md
-├── .gitignore
-├── viz_config.py                    # Global matplotlib style (fonts, palette, sizes)
-│
-├── data/                            # Raw and processed datasets
-│   ├── cases.csv                    # Per-case inlet conditions (V_in, C_in, Area)
-│   ├── summary_0_499.csv            # Raw CFD concentration profiles
-│   ├── cfd_lhs_cases.csv            # Cases sampled by Latin Hypercube Sampling
-│   ├── case.csv                     # Time-step table used by the Fluent batch runner
-│   ├── train_dataset_ready.csv      # Merged long-format ML-ready dataset
-│   └── Data_Efficiency_Curve.csv
-│
-├── notebooks/                       # Jupyter analysis pipeline
-│   ├── 00_data_preparation/
-│   │   ├── data.ipynb               # Clean & merge cases + summary -> train_dataset_ready
-│   │   └── datasee.ipynb            # Quick per-case concentration-profile viewer
-│   ├── 01_stage1_exploration/
-│   │   └── Stage1.ipynb             # PySR data-driven formula discovery
-│   ├── 02_stage2_verification/
-│   │   └── Stage2.ipynb             # Physics-informed fit (curve_fit) for alpha/beta/gamma/delta
-│   ├── 03_experiments/
-│   │   ├── klw PySR.ipynb           # Robustness experiment (noise 0%-200%)  -> Fig. 6, 7
-│   │   └── add.ipynb                # Data-efficiency experiment (100-44400 samples) -> Fig. 8
-│   └── 04_visualization/
-│       ├── Visualization.ipynb      # Fig. 1 - combined fit + residual analysis
-│       ├── Visualization_1.ipynb    # Fig. 4 - performance degradation curve
-│       ├── Visualization_2.ipynb    # Fig. 5 - sequence denoising effect
-│       ├── Visualization_3.ipynb    # Fig. 6 - robustness comparison
-│       ├── Visualization_4.ipynb    # Fig. 7 - parameter stability
-│       └── Visualization_5.ipynb    # Fig. 8 - data efficiency
-│
-├── scripts/                         # Stand-alone Python scripts
-│   ├── cfd_pipeline/                # CFD pre-processing & batch automation
-│   │   ├── data_generate.py         # LHS -> cfd_lhs_cases.csv
-│   │   ├── case_copy.py             # Re-organise Fluent case files
-│   │   ├── extract_data.py          # Extract profiles from dpX_area.out
-│   │   ├── run_automation_linux.py  # Generate Linux batch .sh scripts
-│   │   └── fluent_template.jou      # Fluent Journal template
-│   ├── lhs_sampling/                # LHS distribution plotting
-│   │   ├── lhs.py
-│   │   └── plot_lhs.py
-│   ├── analysis_legacy/             # Early exploration scripts (superseded by notebooks)
-│   │   ├── fig.py
-│   │   ├── pysr1.py
-│   │   ├── test2.py
-│   │   └── test_pysr.py
-│   └── _patch_notebooks.py          # Internal tool - inject project-root bootstrap cells
-│
-├── figures/                         # Publication-ready figures
-│   ├── Formula_Performance.png
-│   ├── lhs_distribution.pdf / .tiff
-│   └── 9.pdf
-│
-├── docs/
-│   └── UNTITLED.opju                # Origin project file
-│
-├── Stage1_Exploration/              # Output of Stage1.ipynb
-├── Stage2_Hypothesis_Verification/  # Output of Stage2.ipynb
-├── Refined_Results_v4/              # Robustness-experiment output (source for Fig. 6/7)
-├── Data_Efficiency_Results/         # Data-efficiency output (source for Fig. 8)
-└── outputs/                         # Raw PySR run directories (gitignored)
+|-- README.md                   This file
+|-- LICENSE                     MIT
+|-- requirements.txt            Python dependencies (pysr requires Julia)
+|-- .gitignore
+|-- viz_config.py               Shared matplotlib style (paper fonts/palette)
+|
+|-- data/                       Raw + processed CSVs
+|   |-- cases.csv               Per-case inlet conditions (V_in, C_in, Area)
+|   |-- summary_0_499.csv       Per-case concentration profile (wide format)
+|   |-- cfd_lhs_cases.csv       Latin-hypercube sampling of cases
+|   |-- case.csv                Time-step table used by the Fluent batch runner
+|   |-- train_dataset_ready.csv Merged ML-ready long-format dataset
+|   `-- Data_Efficiency_Curve.csv
+|
+|-- src/                        Main pipeline
+|   |-- __init__.py
+|   |-- _bootstrap.py           Auto path resolution
+|   |-- data_processing.py      Build train_dataset_ready.csv; case-profile plot
+|   |-- stage1_exploration.py   PySR data-driven formula discovery
+|   |-- stage2_fitting.py       Physics-informed curve_fit
+|   |-- exp_robustness.py       Noise sweep 0-200% (Direct / MLP / Hybrid)
+|   `-- exp_efficiency.py       Training-set-size sweep (100 - 44 400 samples)
+|
+|-- plotting/                   Post-processing: one script per paper figure
+|   |-- __init__.py
+|   |-- _paths.py
+|   |-- fig1_fit_residual.py    Fig. 1  combined fit + residuals
+|   |-- fig4_degradation.py     Fig. 4  performance degradation curve
+|   |-- fig5_denoising.py       Fig. 5  sequence denoising + parity
+|   |-- fig6_robustness.py      Fig. 6  robustness comparison
+|   |-- fig7_stability.py       Fig. 7  parameter stability
+|   `-- fig8_efficiency.py      Fig. 8  data efficiency
+|
+`-- results/                    Experiment outputs (committed for fast reproduction)
+    |-- stage1/                 Candidate equations from PySR
+    |-- stage2/                 Fitted parameters + validation PDFs
+    |-- robustness/             Per-noise-level formulas, MLP models, comparisons
+    |-- efficiency/             Data-efficiency sweep CSV
+    `-- figures/                Final PDFs used in the paper
 ```
-
-> **Path convention** — Every notebook begins with an auto-injected cell
-> marked `# [auto] project-root setup`.  That cell walks up from the current
-> working directory until it finds the folder containing `.gitignore`
-> (the project root), then does `os.chdir(PROJECT_ROOT)` and appends the
-> root to `sys.path`.  This way every relative path (`data/...`,
-> `Stage1_Exploration/...`, `from viz_config import VizConfig`) keeps
-> working no matter where the notebook is launched from.
 
 ---
 
-## Workflow
+## Quick start
 
-1. **Build the dataset** — run `notebooks/00_data_preparation/data.ipynb` to
-   produce `data/train_dataset_ready.csv`.
-2. **Formula discovery** — run `notebooks/01_stage1_exploration/Stage1.ipynb`.
-3. **Hypothesis verification** — run
-   `notebooks/02_stage2_verification/Stage2.ipynb`.
-4. **Experiments**
-   * `notebooks/03_experiments/klw PySR.ipynb` &mdash; robustness study.
-   * `notebooks/03_experiments/add.ipynb` &mdash; data-efficiency study.
-5. **Figures** — run the notebooks under `notebooks/04_visualization/`.
+### 1. Install
+
+```bash
+git clone https://github.com/<user>/<repo>.git
+cd <repo>
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# macOS / Linux
+# source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+`pysr` requires a Julia install; see the
+[PySR docs](https://astroautomata.com/PySR/) for the one-time setup
+(`python -c "import pysr; pysr.install()"`).
+
+### 2. Reproduce every figure from the committed results (fast)
+
+All experiment outputs needed to render the figures live under
+`results/`, so the figure scripts run in seconds:
+
+```bash
+python -m plotting.fig1_fit_residual
+python -m plotting.fig4_degradation
+python -m plotting.fig5_denoising
+python -m plotting.fig6_robustness
+python -m plotting.fig7_stability
+python -m plotting.fig8_efficiency
+```
+
+PDFs land in `results/figures/`.
+
+### 3. Rebuild the entire pipeline from scratch (slow)
+
+```bash
+python -m src.data_processing      # build data/train_dataset_ready.csv
+python -m src.stage1_exploration   # PySR formula discovery
+python -m src.stage2_fitting       # curve_fit alpha/beta/gamma/delta
+python -m src.exp_robustness       # noise sweep  (hours)
+python -m src.exp_efficiency       # size sweep   (hours)
+```
+
+Then rerun the `plotting.*` scripts.
 
 ---
 
-## Conventions & notes
+## The formula
 
-* **Colour scheme**
-  * Deep blue — ground truth / core model
-  * Red &mdash; fit line / highlight
-  * Green &mdash; robust region
-  * Grey &mdash; baseline / control group
-* All random seeds are fixed (`random_state=42`) for reproducibility.
-* Concentration values are pre-scaled by a factor of `1e7` throughout the
-  pipeline.
+The two-stage symbolic regression + physics-informed fit recovers
+
+```
+                              C_in
+C(x) = -----------------------------------------------
+            alpha * x
+       ---------------------------------------  +  delta
+       max(Area - beta * sqrt(x/v) + gamma, 0.1)
+```
+
+The Stage-2 parameters are persisted to
+`results/stage2/final_parameters.txt`. Their stability across noise
+levels is analysed in Figure 7.
 
 ---
 
-## Requirements
+## Conventions
 
-Core dependencies:
+- **Random seeds** are pinned (`random_state=42` throughout).
+- **Concentration scaling**: raw CFD values (~1e-7 kg/m^3) are multiplied
+  by `SCALE = 1e7` before fitting to avoid numerical issues; axis labels
+  keep the original physical units.
+- **Case-wise splitting**: train/test splits group by `Case` ID
+  (never per row) to prevent leakage between correlated neighbouring
+  points along the same tunnel geometry.
+- **Plot style**: every figure uses the shared `viz_config.VizConfig`
+  style (Times New Roman, deep-blue / red / green / grey palette).
 
+---
+
+## Citation
+
+If you use this code or the framework in academic work, please cite:
+
+```bibtex
+@article{<citekey>,
+  title   = {Hybrid Symbolic-Regression Framework for Pollutant Concentration Prediction},
+  author  = {...},
+  journal = {...},
+  year    = {2026}
+}
 ```
-numpy, pandas, scipy, scikit-learn, matplotlib, seaborn, torch, pysr
-```
 
-`pysr` requires a working Julia installation; see the
-[PySR documentation](https://astroautomata.com/PySR/) for setup details.
+---
+
+## License
+
+Released under the [MIT License](LICENSE).

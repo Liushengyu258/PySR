@@ -7,6 +7,11 @@ __pycache__/
 *.so
 .Python
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
 
 # ==========================================
 # Virtual environments
@@ -17,18 +22,18 @@ env/
 ENV/
 
 # ==========================================
-# IDE / Editor
+# IDEs & editors
 # ==========================================
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
 
 # ==========================================
-# Jupyter
+# Jupyter (we no longer ship notebooks, but keep the rule for safety)
 # ==========================================
 .ipynb_checkpoints/
-*/.ipynb_checkpoints/*
 
 # ==========================================
 # OS
@@ -38,22 +43,23 @@ Thumbs.db
 desktop.ini
 
 # ==========================================
-# Project-specific: PySR intermediate artefacts (very large, not worth committing)
+# PySR / symbolic-regression artefacts
 # ==========================================
-# Each PySR run creates a timestamped directory under outputs/; they can be huge
+# Each PySR run creates a timestamped directory; we do not commit them.
 outputs/
-
-# Julia / PySR symbolic-regression intermediate files
 hall_of_fame*.csv
 hall_of_fame*.pkl
 hall_of_fame*.bkup
 *.out.bkup
 
 # ==========================================
-# Large files (optional - uncomment if the raw CFD data should not be pushed)
+# Experiment artefacts that are too heavy for a repo
 # ==========================================
+# The ``results/robustness/Noise_<pct>pct/mlp_model.pkl`` files total ~several MB.
+# Uncomment to drop them from the repo and recompute with ``python -m src.exp_robustness``.
+# results/robustness/Noise_*/mlp_model.pkl
+# results/robustness/Noise_*/scaler_X.pkl
+
+# If the raw CFD dataset is too large, uncomment to exclude it:
 # data/train_dataset_ready.csv
 # data/summary_0_499.csv
-
-# One-off internal patch tool output (uncomment to exclude from the repo)
-# scripts/_patch_notebooks.py

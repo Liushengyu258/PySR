@@ -1,0 +1,16 @@
+# Core scientific stack
+numpy>=1.23
+pandas>=1.5
+scipy>=1.10
+scikit-learn>=1.2
+matplotlib>=3.6
+joblib>=1.2
+
+# Symbolic regression
+# NOTE: pysr requires a working Julia installation.
+# See https://astroautomata.com/PySR/ for setup.
+pysr>=0.18
+
+# Optional - only needed for Latin-hypercube sampling of new CFD cases
+# (not required to reproduce the paper figures)
+# seaborn>=0.12
