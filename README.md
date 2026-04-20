@@ -162,7 +162,7 @@ If you use this code or the framework in academic work, please cite:
 
 ```bibtex
 @article{<citekey>,
-  title   = {Hybrid Symbolic-Regression Framework for Pollutant Concentration Prediction},
+  title   = {Physics-Driven AI for Robust Particulate Transport Prediction in Tunnels: Integrating Neural Denoising With Symbolic Regression},
   author  = {...},
   journal = {...},
   year    = {2026}
